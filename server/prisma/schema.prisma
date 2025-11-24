@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  email        String   @unique
+  password     String
+  name         String
+  avatar       String?
+  status       String   @default("Hey there! I'm using Zenith")
+  lastSeen     DateTime @default(now())
+  publicKey    String?  // For E2E encryption
+  isOnline     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  sentMessages         Message[]       @relation("SentMessages")
+  ownedGroups          Group[]         @relation("GroupOwner")
+  uploadedFiles        FileUpload[]
+  messageReactions     MessageReaction[]
+  readReceipts         ReadReceipt[]
+  initiatedCalls       Call[]          @relation("CallInitiator")
+  receivedCalls        Call[]          @relation("CallReceiver")
+
+  @@map("users")
+}
+
+model Conversation {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  type            String   @default("direct") // "direct" or "group"
+  participantIds  String[] @db.ObjectId
+  lastMessageId   String?  @db.ObjectId
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  messages        Message[]
+  groupId         String?  @db.ObjectId
+  group           Group?   @relation(fields: [groupId], references: [id])
+
+  @@map("conversations")
+}
+
+model Message {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  content         String   // Encrypted content
+  senderId        String   @db.ObjectId
+  sender          User     @relation("SentMessages", fields: [senderId], references: [id])
+  conversationId  String   @db.ObjectId
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  type            String   @default("text") // text, image, video, audio, file
+  status          String   @default("sent") // sent, delivered, read
+  encrypted       Boolean  @default(true)
+  timestamp       DateTime @default(now())
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  replyToId       String?  @db.ObjectId
+
+  // Relations
+  reactions       MessageReaction[]
+  readReceipts    ReadReceipt[]
+  files           FileUpload[]
+
+  @@map("messages")
+}
+
+model Group {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  avatar      String?
+  ownerId     String   @db.ObjectId
+  owner       User     @relation("GroupOwner", fields: [ownerId], references: [id])
+  adminIds    String[] @db.ObjectId
+  memberIds   String[] @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  conversations Conversation[]
+
+  @@map("groups")
+}
+
+model Call {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  callerId    String   @db.ObjectId
+  caller      User     @relation("CallInitiator", fields: [callerId], references: [id])
+  receiverId  String   @db.ObjectId
+  receiver    User     @relation("CallReceiver", fields: [receiverId], references: [id])
+  type        String   // "voice" or "video"
+  status      String   @default("ringing") // ringing, active, ended, missed, rejected
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  duration    Int?     // in seconds
+
+  @@map("calls")
+}
+
+model FileUpload {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  url             String
+  type            String   // image, video, audio, document
+  size            Int
+  filename        String
+  mimeType        String
+  uploadedById    String   @db.ObjectId
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+  messageId       String?  @db.ObjectId
+  message         Message? @relation(fields: [messageId], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@map("file_uploads")
+}
+
+model MessageReaction {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId  String   @db.ObjectId
+  message    Message  @relation(fields: [messageId], references: [id])
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  emoji      String
+  createdAt  DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@map("message_reactions")
+}
+
+model ReadReceipt {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId  String   @db.ObjectId
+  message    Message  @relation(fields: [messageId], references: [id])
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  readAt     DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@map("read_receipts")
+}

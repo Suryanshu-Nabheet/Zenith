@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: zenith-mongodb
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: zenith
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - zenith-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: zenith-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - zenith-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: zenith-backend
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: mongodb://mongodb:27017/zenith
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - zenith-network
+    volumes:
+      - ./server/logs:/app/logs
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  zenith-network:
+    driver: bridge
