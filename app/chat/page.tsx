@@ -27,8 +27,8 @@ export default function ChatPage() {
           // Get Clerk token
           const token = await getToken()
           if (token) {
-            // Set token in API client FIRST
-            api.setAuthToken(token)
+            // Set token provider in API client
+            api.setTokenProvider(getToken)
             
             // Then sync user
             await api.syncClerkUser({

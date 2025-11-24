@@ -3,7 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 class APIClient {
-  private client: AxiosInstance;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -14,10 +14,15 @@ class APIClient {
       timeout: 10000,
     });
 
-    // Request interceptor - will be set from components
+    // Request interceptor
     this.client.interceptors.request.use(
       async (config) => {
-        // Token will be added from calling component
+        if (this.tokenProvider) {
+          const token = await this.tokenProvider();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        }
         return config;
       },
       (error) => {
@@ -26,7 +31,12 @@ class APIClient {
     );
   }
 
-  // Set auth token
+  // Set token provider
+  setTokenProvider(provider: () => Promise<string | null>) {
+    this.tokenProvider = provider;
+  }
+
+  // Set auth token (legacy/fallback)
   setAuthToken(token: string) {
     this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
@@ -34,6 +44,7 @@ class APIClient {
   // Clear auth token
   clearAuthToken() {
     delete this.client.defaults.headers.common['Authorization'];
+    this.tokenProvider = null;
   }
 
   // Users

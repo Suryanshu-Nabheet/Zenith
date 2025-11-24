@@ -4,17 +4,20 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000'
 
 class SocketClient {
   private socket: Socket | null = null;
-  private token: string | null = null;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   async connect() {
     if (this.socket?.connected) return;
 
-    // Get token from Clerk - must be called from React component
-    // This will be set externally before connecting
-    const token = this.token;
-
     this.socket = io(SOCKET_URL, {
-      auth: { token },
+      auth: async (cb) => {
+        if (this.tokenProvider) {
+          const token = await this.tokenProvider();
+          cb({ token });
+        } else {
+          cb({});
+        }
+      },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -35,9 +38,15 @@ class SocketClient {
     });
   }
 
-  // Set token before connecting
+  // Set token provider
+  setTokenProvider(provider: () => Promise<string | null>) {
+    this.tokenProvider = provider;
+  }
+
+  // Legacy method support
   setToken(token: string) {
-    this.token = token;
+    // No-op or could set a static provider
+    this.tokenProvider = async () => token;
   }
 
   disconnect() {

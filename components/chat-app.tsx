@@ -30,12 +30,15 @@ export function ChatApp({ user }: ChatAppProps) {
   useEffect(() => {
     const initSocket = async () => {
       try {
-        const token = await getToken();
-        if (token) {
-          socketClient.setToken(token);
-          api.setAuthToken(token);
-          await socketClient.connect();
-        }
+      try {
+        // Set token providers
+        socketClient.setTokenProvider(getToken);
+        api.setTokenProvider(getToken);
+        
+        await socketClient.connect();
+      } catch (error) {
+        console.error('Socket connection error:', error);
+      }
       } catch (error) {
         console.error('Socket connection error:', error);
       }
