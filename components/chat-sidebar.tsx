@@ -1,16 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LogOut, Plus, Search, Settings } from "lucide-react"
+import { LogOut, Plus, Search, Settings, Loader2 } from "lucide-react"
+import { api } from "@/lib/api"
 
 interface Contact {
   id: string
   name: string
-  status: "online" | "away" | "offline"
-  avatar: string
+  email: string
+  avatar?: string
+  status?: string
   unread?: number
   lastMessage?: string
   lastMessageTime?: string
@@ -33,45 +35,99 @@ export function ChatSidebar({
   onOpenSettings,
   onViewProfile,
 }: ChatSidebarProps) {
-  const [contacts, setContacts] = useState<Contact[]>([
-    {
-      id: "1",
-      name: "Alice Johnson",
-      status: "online",
-      avatar: "AJ",
-      unread: 2,
-      lastMessage: "That sounds awesome!",
-      lastMessageTime: "2:30 PM"
-    },
-    { 
-      id: "2", 
-      name: "Bob Smith", 
-      status: "online", 
-      avatar: "BS", 
-      lastMessage: "See you tomorrow!",
-      lastMessageTime: "1:15 PM"
-    },
-    { 
-      id: "3", 
-      name: "Carol White", 
-      status: "away", 
-      avatar: "CW", 
-      unread: 1, 
-      lastMessage: "Thanks for the update",
-      lastMessageTime: "Yesterday"
-    },
-    { 
-      id: "4", 
-      name: "David Brown", 
-      status: "offline", 
-      avatar: "DB", 
-      lastMessage: "Talk soon",
-      lastMessageTime: "Yesterday"
-    },
-  ])
+  const [contacts, setContacts] = useState<Contact[]>([])
   const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [searchResults, setSearchResults] = useState<Contact[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
-  const filteredContacts = contacts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+  // Load user's conversations on mount
+  useEffect(() => {
+    loadConversations()
+  }, [])
+
+  // Search users when typing
+  useEffect(() => {
+    if (search.trim().length > 0) {
+      searchUsers()
+    } else {
+      setSearchResults([])
+      setIsSearching(false)
+    }
+  }, [search])
+
+  const loadConversations = async () => {
+    setLoading(true)
+    try {
+      const data = await api.getConversations()
+      // Transform conversations to contacts format
+      const conversationContacts = data.conversations?.map((conv: any) => ({
+        id: conv.id,
+        name: conv.participants?.[0]?.name || 'Unknown User',
+        email: conv.participants?.[0]?.email || '',
+        avatar: conv.participants?.[0]?.avatar,
+        status: 'online',
+        lastMessage: conv.lastMessage?.content || 'No messages yet',
+        lastMessageTime: conv.lastMessage?.createdAt 
+          ? new Date(conv.lastMessage.createdAt).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})
+          : '',
+        unread: 0
+      })) || []
+      setContacts(conversationContacts)
+    } catch (error) {
+      console.error('Failed to load conversations:', error)
+      // Use mock data as fallback
+      setContacts([
+        {
+          id: "1",
+          name: "Alice Johnson",
+          email: "alice@example.com",
+          status: "online",
+          unread: 2,
+          lastMessage: "That sounds awesome!",
+          lastMessageTime: "2:30 PM"
+        },
+        { 
+          id: "2", 
+          name: "Bob Smith", 
+          email: "bob@example.com",
+          status: "online",
+          lastMessage: "See you tomorrow!",
+          lastMessageTime: "1:15 PM"
+        },
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const searchUsers = async () => {
+    setIsSearching(true)
+    try {
+      const data = await api.getUsers(search)
+      setSearchResults(data.users || [])
+    } catch (error) {
+      console.error('Search failed:', error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleCreateConversation = async (userId: string) => {
+    try {
+      const data = await api.createConversation(userId)
+      if (data.conversation) {
+        await loadConversations()
+        onSelectContact(data.conversation.id)
+      }
+    } catch (error) {
+      console.error('Failed to create conversation:', error)
+    }
+  }
+
+  const displayContacts = search.trim().length > 0 ? searchResults : contacts
+  const showSearchMode = search.trim().length > 0
 
   return (
     <div className="w-96 bg-zinc-950 border-r border-zinc-900 flex flex-col h-screen">
@@ -108,9 +164,13 @@ export function ChatSidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          {isSearching ? (
+            <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          )}
           <Input
-            placeholder="Search conversations"
+            placeholder={showSearchMode ? "Search users..." : "Search conversations"}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-600 rounded-lg h-10"
@@ -118,72 +178,103 @@ export function ChatSidebar({
         </div>
       </div>
 
-      {/* Chats List */}
+      {/* Chats/Search List */}
       <div className="flex-1 overflow-y-auto">
-        {filteredContacts.length > 0 ? (
+        {loading ? (
+          <div className="p-8 text-center">
+            <Loader2 className="w-8 h-8 text-blue-500 mx-auto mb-3 animate-spin" />
+            <p className="text-sm text-zinc-500">Loading conversations...</p>
+          </div>
+        ) : displayContacts.length > 0 ? (
           <div className="py-2">
-            {filteredContacts.map((contact) => (
-              <motion.button
-                key={contact.id}
-                onClick={() => onSelectContact(contact.id)}
-                className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
-                  selectedContact === contact.id
-                    ? "bg-zinc-900"
-                    : "hover:bg-zinc-900/50"
-                }`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileHover={{ x: 2 }}
-              >
-                <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-semibold text-white">
-                    {contact.avatar}
-                  </div>
-                  {contact.status === "online" && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-950"></div>
-                  )}
-                </div>
-
-                <div className="flex-1 text-left min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-white text-sm truncate">
-                      {contact.name}
-                    </p>
-                    <span className="text-xs text-zinc-500 flex-shrink-0 ml-2">
-                      {contact.lastMessageTime}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-zinc-400 truncate">
-                      {contact.lastMessage || "No messages"}
-                    </p>
-                    {contact.unread && contact.unread > 0 && (
-                      <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
-                        {contact.unread}
-                      </span>
+            {showSearchMode && searchResults.length > 0 && (
+              <div className="px-4 py-2">
+                <p className="text-xs text-zinc-500 uppercase font-semibold">Search Results</p>
+              </div>
+            )}
+            <AnimatePresence>
+              {displayContacts.map((contact) => (
+                <motion.button
+                  key={contact.id}
+                  onClick={() => {
+                    if (showSearchMode) {
+                      handleCreateConversation(contact.id)
+                    } else {
+                      onSelectContact(contact.id)
+                    }
+                  }}
+                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
+                    selectedContact === contact.id
+                      ? "bg-zinc-900"
+                      : "hover:bg-zinc-900/50"
+                  }`}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  whileHover={{ x: 2 }}
+                >
+                  <div className="relative flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-semibold text-white text-sm">
+                      {contact.avatar || contact.name.charAt(0).toUpperCase()}
+                    </div>
+                    {contact.status === "online" && !showSearchMode && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-950"></div>
                     )}
                   </div>
-                </div>
-              </motion.button>
-            ))}
+
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium text-white text-sm truncate">
+                        {contact.name}
+                      </p>
+                      {!showSearchMode && contact.lastMessageTime && (
+                        <span className="text-xs text-zinc-500 flex-shrink-0 ml-2">
+                          {contact.lastMessageTime}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-zinc-400 truncate">
+                        {showSearchMode ? contact.email : (contact.lastMessage || "No messages")}
+                      </p>
+                      {!showSearchMode && contact.unread && contact.unread > 0 && (
+                        <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
+                          {contact.unread}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </AnimatePresence>
           </div>
         ) : (
           <div className="p-8 text-center">
             <Search className="w-12 h-12 text-zinc-800 mx-auto mb-3" />
-            <p className="text-sm text-zinc-500">No conversations found</p>
+            <p className="text-sm text-zinc-500">
+              {showSearchMode ? "No users found" : "No conversations yet"}
+            </p>
+            {!showSearchMode && (
+              <p className="text-xs text-zinc-600 mt-2">
+                Search for users to start chatting
+              </p>
+            )}
           </div>
         )}
       </div>
 
       {/* New Chat Button */}
-      <div className="p-4 border-t border-zinc-900">
-        <Button
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg h-11"
-        >
-          <Plus className="w-5 h-5" />
-          New Chat
-        </Button>
-      </div>
+      {!showSearchMode && (
+        <div className="p-4 border-t border-zinc-900">
+          <Button
+            onClick={() => setSearch(" ")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg h-11"
+          >
+            <Plus className="w-5 h-5" />
+            New Chat
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

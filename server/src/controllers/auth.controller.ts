@@ -276,9 +276,15 @@ export const clerkSync = async (
       return;
     }
 
-    // Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { id: clerkId },
+    // Check if user already exists by clerkId or email
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: clerkId },
+          { clerkId: clerkId },
+          { email: email }
+        ]
+      },
     });
 
     if (!user) {
@@ -286,10 +292,10 @@ export const clerkSync = async (
       user = await prisma.user.create({
         data: {
           id: clerkId,
+          clerkId: clerkId,
           email,
           name,
           avatar: avatar || null,
-          password: '', // No password needed with Clerk
           isOnline: true,
           lastSeen: new Date(),
         },
@@ -299,8 +305,9 @@ export const clerkSync = async (
     } else {
       // Update existing user
       user = await prisma.user.update({
-        where: { id: clerkId },
+        where: { id: user.id },
         data: {
+          clerkId: clerkId,
           email,
           name,
           avatar: avatar || null,
@@ -308,6 +315,8 @@ export const clerkSync = async (
           lastSeen: new Date(),
         },
       });
+      
+      logger.info(`User updated from Clerk: ${user.email}`);
     }
 
     res.status(200).json({

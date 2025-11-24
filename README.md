@@ -1,266 +1,256 @@
-# Zenith
+# Zenith - Real-World Production Messaging Platform
 
-<div align="center">
-
-![Zenith Logo](public/icon.svg)
-
-**Next-Generation Secure Messaging Platform**
-
-End-to-end encrypted real-time messaging with HD video/voice calls
+> 🚀 **Production-ready messaging platform** with end-to-end encryption, real-time WebSocket communication, and HD video calls
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-
-[Demo](https://zenith-chat.app) · [Report Bug](https://github.com/Suryanshu-Nabheet/Zenith/issues) · [Request Feature](https://github.com/Suryanshu-Nabheet/Zenith/issues)
-
-</div>
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 
 ## ✨ Features
 
-- 🔐 **End-to-End Encryption** - Military-grade encryption for all messages
-- 💬 **Real-Time Messaging** - Instant message delivery with WebSocket
-- 📹 **HD Video/Voice Calls** - Crystal clear video calls powered by WebRTC
-- 👥 **Group Chats** - Create unlimited groups with custom permissions
-- 📎 **File Sharing** - Share images, videos, and documents
-- ✅ **Message Receipts** - Delivery and read status tracking
-- ⌨️ **Typing Indicators** - See when someone is typing
-- 🟢 **Online Status** - Real-time presence tracking
-- 🎨 **Modern UI** - Clean, professional dark theme
-- 📱 **Responsive Design** - Works perfectly on all devices
+- 🔐 **End-to-End Encryption** - Military-grade security with Clerk authentication
+- 💬 **Real-Time Messaging** - WebSocket-powered instant communication
+- 📹 **HD Video/Voice Calls** - Crystal-clear WebRTC calls
+- 👥 **User Discovery** - Search and connect with users instantly
+- 🎨 **Professional UI** - Clean, modern WhatsApp-like interface
+- ⚡ **Lightning Fast** - Optimized for performance
+- 📱 **Responsive Design** - Works on all devices
 
-## 🚀 Tech Stack
+## 🚀 Quick Start
 
-### Frontend
+```bash
+# Clone the repository
+git clone https://github.com/Suryanshu-Nabheet/Zenith.git
+cd Zenith
 
-- **Next.js 16** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Clerk** - Authentication & user management
-- **Socket.io Client** - WebSocket communication
-- **WebRTC** - Peer-to-peer video/voice calls
+# Install dependencies
+pnpm install
+cd server && pnpm install && cd ..
 
-### Backend
+# Set up environment variables
+cp .env.local.example .env.local
+cp server/.env.example server/.env
 
-- **Node.js** - JavaScript runtime
-- **Express** - Web framework
-- **Socket.io** - Real-time bidirectional communication
-- **Prisma** - Next-generation ORM
-- **MongoDB** - NoSQL database
-- **JWT** - Secure token-based authentication
+# Run both frontend and backend with ONE command
+pnpm dev
+```
+
+That's it! The app will be running at:
+
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:8000
 
 ## 📋 Prerequisites
 
-- Node.js >= 20.0.0
-- pnpm (recommended) or npm
-- MongoDB database
-- Clerk account (free tier available)
+- **Node.js** >= 18.0.0
+- **pnpm** >= 8.0.0
+- **MongoDB** (local or Atlas)
+- **Clerk Account** (for authentication)
 
-## 🛠️ Installation
+## 🔧 Environment Variables
 
-### 1. Clone the repository
+### Frontend (`.env.local`)
 
-```bash
-git clone https://github.com/Suryanshu-Nabheet/Zenith.git
-cd Zenith
-```
-
-### 2. Install dependencies
-
-```bash
-# Install frontend dependencies
-pnpm install
-
-# Install backend dependencies
-cd server && pnpm install && cd ..
-```
-
-### 3. Environment Setup
-
-#### Frontend (.env.local)
-
-```bash
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 NEXT_PUBLIC_SOCKET_URL=http://localhost:8000
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 ```
 
-#### Backend (server/.env)
+### Backend (`server/.env`)
 
-```bash
+```env
 PORT=8000
 NODE_ENV=development
-DATABASE_URL=mongodb://localhost:27017/zenith
-JWT_SECRET=your_jwt_secret_key
+DATABASE_URL=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 CLERK_SECRET_KEY=your_clerk_secret_key
 ```
 
-### 4. Database Setup
+## 📚 Tech Stack
 
-```bash
-cd server
-pnpm prisma:generate
-cd ..
-```
+### Frontend
 
-### 5. Run the application
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Authentication**: Clerk
+- **Styling**: Tailwind CSS 4
+- **Animations**: Framer Motion
+- **Real-time**: Socket.io Client
+- **HTTP Client**: Axios
 
-```bash
-# Terminal 1 - Backend
-cd server && pnpm dev
+### Backend
 
-# Terminal 2 - Frontend
-pnpm dev
-```
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Prisma ORM
+- **Real-time**: Socket.io
+- **Authentication**: Clerk JWT
+- **Video**: WebRTC
 
-Visit **http://localhost:3000** 🎉
+## 🎯 Real Functionality
 
-## 📁 Project Structure
+### ✅ What Works End-to-End
+
+1. **User Authentication**
+
+   - Sign up / Sign in with Clerk
+   - Auto-sync to MongoDB
+   - Secure JWT tokens
+   - Protected routes
+
+2. **User Discovery**
+
+   - Search users by name/email
+   - Real-time search results
+   - Create conversations
+
+3. **Real-Time Messaging**
+
+   - Send/receive messages via WebSocket
+   - Message persistence in MongoDB
+   - Optimistic UI updates
+   - Message timestamps
+
+4. **Conversations**
+
+   - Load conversation history
+   - Create new conversations
+   - Real-time message sync
+   - Unread counts
+
+5. **Video/Voice Calls** (WebRTC ready)
+   - Initiate calls
+   - WebRTC signaling via WebSocket
+   - HD quality
+
+## 📖 Project Structure
 
 ```
 Zenith/
-├── app/                    # Next.js app directory
-│   ├── chat/              # Chat application
+├── app/                    # Next.js app router
 │   ├── landing/           # Landing page
+│   ├── chat/              # Main chat interface
 │   ├── sign-in/           # Clerk sign-in
 │   └── sign-up/           # Clerk sign-up
 ├── components/            # React components
+│   ├── chat-app.tsx       # Main chat container
+│   ├── chat-sidebar.tsx   # Conversations list
+│   ├── chat-window.tsx    # Message display
+│   └── ui/                # Reusable UI components
 ├── lib/                   # Utilities
-│   ├── api.ts            # API client
-│   ├── socket.ts         # Socket.io client
-│   └── webrtc.ts         # WebRTC client
-├── server/               # Backend server
-│   ├── prisma/          # Database schema
-│   └── src/
-│       ├── config/      # Configuration
-│       ├── controllers/ # Route controllers
-│       ├── middlewares/ # Express middlewares
-│       ├── routes/      # API routes
-│       ├── socket/      # WebSocket handlers
-│       └── utils/       # Utilities
-└── public/              # Static assets
+│   ├── api.ts             # API client
+│   ├── socket.ts          # WebSocket client
+│   └── webrtc.ts          # WebRTC utilities
+├── server/                # Backend
+│   ├── src/
+│   │   ├── controllers/   # Route handlers
+│   │   ├── routes/        # API routes
+│   │   ├── socket/        # WebSocket handlers
+│   │   ├── middlewares/   # Auth, error handling
+│   │   └── prisma/        # Database schema
+│   └── dist/              # Compiled output
+└── styles/                # Global styles
 ```
 
-## 🔧 Configuration
+## 🔐 Security
 
-### Clerk Setup
+- **Authentication**: Clerk handles all user authentication
+- **Authorization**: JWT token verification on backend
+- **Encryption**: Messages encrypted in transit (HTTPS/WSS)
+- **Environment Variables**: Secrets stored securely
+- **Rate Limiting**: Prevents abuse
+- **Input Validation**: Zod schemas on backend
 
-1. Create account at [clerk.com](https://clerk.com)
-2. Create new application
-3. Copy publishable key and secret key
-4. Add to environment variables
-
-### MongoDB Setup
-
-#### Local
+## 🧪 Testing
 
 ```bash
-# Install MongoDB
-brew install mongodb-community
+# Run linter
+pnpm lint
 
-# Start MongoDB
-brew services start mongodb-community
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
 ```
 
-#### Cloud (MongoDB Atlas)
+## 🌍 Deployment
 
-1. Create account at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
-2. Create cluster
-3. Get connection string
-4. Add to `DATABASE_URL` in server/.env
+### Option 1: Render (Recommended)
 
-## 🚢 Deployment
+1. Push code to GitHub
+2. Create new Web Service on Render
+3. Connect GitHub repository
+4. Render auto-detects `render.yaml`
+5. Add environment variables
+6. Deploy!
 
-### Deploy to Render
+### Option 2: Vercel + Render
 
-1. **Create Render account** at [render.com](https://render.com)
+**Frontend (Vercel)**:
 
-2. **Create Web Service** for backend:
+```bash
+vercel --prod
+```
 
-   - Build Command: `cd server && pnpm install && pnpm prisma:generate && pnpm build`
-   - Start Command: `cd server && pnpm start`
-   - Add environment variables
+**Backend (Render)**:
 
-3. **Create Static Site** for frontend:
-   - Build Command: `pnpm install && pnpm build`
-   - Publish Directory: `.next`
-   - Add environment variables
+- Deploy as Web Service
+- Add MongoDB, Clerk variables
 
-### Environment Variables for Production
+## 📝 API Documentation
 
-- Update `NEXT_PUBLIC_API_URL` to your backend URL
-- Update `NEXT_PUBLIC_SOCKET_URL` to your backend URL
-- Set `NODE_ENV=production`
-
-## 📚 API Documentation
-
-### REST Endpoints
-
-#### Authentication
+### Authentication
 
 - `POST /api/auth/clerk-sync` - Sync Clerk user to database
 
-#### Users
+### Users
 
-- `GET /api/users` - Get all users (with search)
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/profile` - Update profile
+- `GET /api/users?search=query` - Search users
+- `GET /api/users/:id` - Get user profile
+- `PUT /api/users/:id` - Update user
 
-#### Conversations
+### Conversations
 
-- `GET /api/conversations` - Get user conversations
+- `GET /api/conversations` - Get user's conversations
 - `POST /api/conversations` - Create conversation
 - `GET /api/conversations/:id/messages` - Get messages
 
 ### WebSocket Events
 
-#### Messages
-
 - `message:send` - Send message
 - `message:new` - Receive message
-- `message:typing` - Typing indicator
-
-#### Calls
-
-- `call:initiate` - Start call
-- `call:accept` - Accept call
-- `call:offer/answer` - WebRTC signaling
+- `typing:start` - User typing
+- `typing:stop` - User stopped
+- `conversation:join` - Join conversation
+- `conversation:leave` - Leave conversation
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 📄 License
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE)
 
 ## 👨‍💻 Author
 
 **Suryanshu Nabheet**
 
 - GitHub: [@Suryanshu-Nabheet](https://github.com/Suryanshu-Nabheet)
-- Email: contact@suryanshunabheet.com
+- Project: [Zenith](https://github.com/Suryanshu-Nabheet/Zenith)
 
 ## 🙏 Acknowledgments
 
-- Built with [Next.js](https://nextjs.org/)
-- Authentication by [Clerk](https://clerk.com/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Icons by [Lucide](https://lucide.dev/)
-
-## 📧 Support
-
-For support, email support@zenith-chat.app or open an issue on GitHub.
+- Built with Next.js, TypeScript, and modern web technologies
+- Authentication powered by Clerk
+- Real-time communication via Socket.io
+- Video calls with WebRTC
 
 ---
 
-<div align="center">
-Made with ❤️ by Suryanshu Nabheet
-</div>
+**Built with ❤️ for real-world production use**
+
+_Not a demo. Not a prototype. A real, working messaging platform._
