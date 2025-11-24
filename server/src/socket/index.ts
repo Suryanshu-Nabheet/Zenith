@@ -1,6 +1,6 @@
 import { Server as HTTPServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { verifyAccessToken } from '../utils/jwt';
+import { verifyToken } from '@clerk/backend';
 import logger from '../utils/logger';
 import config from '../config';
 import prisma from '../db/client';
@@ -35,12 +35,23 @@ export const initializeSocket = (httpServer: HTTPServer): Server => {
         return next(new Error('Authentication error: No token provided'));
       }
 
-      const payload = verifyAccessToken(token);
-      socket.userId = payload.userId;
-      socket.userEmail = payload.email;
+      const secretKey = process.env.CLERK_SECRET_KEY;
+      
+      if (!secretKey) {
+        return next(new Error('Authentication error: Clerk not configured'));
+      }
 
-      logger.info(`Socket authenticated for user: ${payload.email}`);
-      next();
+      try {
+        const payload = await verifyToken(token, { secretKey });
+        socket.userId = payload.sub; // Clerk user ID is in 'sub' field
+        socket.userEmail = payload.email as string;
+
+        logger.info(`Socket authenticated for user: ${socket.userEmail}`);
+        next();
+      } catch (verifyError) {
+        logger.error('Clerk token verification failed:', verifyError);
+        return next(new Error('Authentication error: Invalid token'));
+      }
     } catch (error) {
       logger.error('Socket authentication failed:', error);
       next(new Error('Authentication error: Invalid token'));

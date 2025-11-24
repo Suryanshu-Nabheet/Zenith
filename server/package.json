@@ -23,6 +23,7 @@
   "author": "Suryanshu Nabheet",
   "license": "MIT",
   "dependencies": {
+    "@clerk/backend": "^2.23.2",
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@prisma/client": "^5.22.0",
     "aws-sdk": "^2.1691.0",
