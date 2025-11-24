@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 class APIClient {
+  private client: AxiosInstance;
   private tokenProvider: (() => Promise<string | null>) | null = null;
 
   constructor() {

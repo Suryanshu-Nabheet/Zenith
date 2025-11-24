@@ -38,16 +38,16 @@ model User {
 
 model Conversation {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  type            String   @default("direct") // "direct" or "group"
-  participantIds  String[] @db.ObjectId
-  lastMessageId   String?  @db.ObjectId
+  type            String   @default("direct") // direct, group
+  participantIds  String[] // Removed @db.ObjectId to support Clerk IDs
+  participants    User[]   @relation(fields: [participantIds], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  groupId         String?  @db.ObjectId
+  group           Group?   @relation(fields: [groupId], references: [id])
 
   // Relations
   messages        Message[]
-  groupId         String?  @db.ObjectId
-  group           Group?   @relation(fields: [groupId], references: [id])
 
   @@map("conversations")
 }
@@ -80,10 +80,10 @@ model Group {
   name        String
   description String?
   avatar      String?
-  ownerId     String   @db.ObjectId
+  ownerId     String   // Removed @db.ObjectId
   owner       User     @relation("GroupOwner", fields: [ownerId], references: [id])
-  adminIds    String[] @db.ObjectId
-  memberIds   String[] @db.ObjectId
+  adminIds    String[] // Removed @db.ObjectId
+  memberIds   String[] // Removed @db.ObjectId
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -95,9 +95,9 @@ model Group {
 
 model Call {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  callerId    String   @db.ObjectId
+  callerId    String   // Removed @db.ObjectId
   caller      User     @relation("CallInitiator", fields: [callerId], references: [id])
-  receiverId  String   @db.ObjectId
+  receiverId  String   // Removed @db.ObjectId
   receiver    User     @relation("CallReceiver", fields: [receiverId], references: [id])
   type        String   // "voice" or "video"
   status      String   @default("ringing") // ringing, active, ended, missed, rejected
