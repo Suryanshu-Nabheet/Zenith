@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Phone, Video, Send, Paperclip, Smile, MoreVertical, User } from "lucide-react"
+import { Phone, Video, Send, Paperclip, Smile, MoreVertical } from "lucide-react"
 
 interface Message {
   id: string
@@ -98,14 +98,14 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-zinc-950 h-screen">
+    <div className="flex-1 flex flex-col bg-black h-screen">
       {/* Header */}
-      <div className="px-6 py-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between">
+      <div className="px-6 py-4 bg-zinc-950 border-b border-zinc-900 flex items-center justify-between">
         <div 
           className="flex items-center gap-3 flex-1 cursor-pointer" 
           onClick={() => onViewProfile?.(contactId)}
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
             {contact.avatar}
           </div>
           <div>
@@ -118,7 +118,7 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
             size="icon"
             variant="ghost"
             onClick={() => onStartCall(contactId)}
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-10 w-10"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-10 w-10"
           >
             <Phone className="w-5 h-5" />
           </Button>
@@ -126,14 +126,14 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
             size="icon"
             variant="ghost"
             onClick={() => onStartCall(contactId)}
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-10 w-10"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-10 w-10"
           >
             <Video className="w-5 h-5" />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-10 w-10"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-10 w-10"
           >
             <MoreVertical className="w-5 h-5" />
           </Button>
@@ -141,7 +141,7 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black">
         <AnimatePresence initial={false}>
           {messages.map((message) => {
             const isOwnMessage = message.sender === user.id
@@ -158,8 +158,8 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
                   <div
                     className={`rounded-2xl px-4 py-3 ${
                       isOwnMessage
-                        ? 'bg-indigo-600 text-white rounded-br-md'
-                        : 'bg-zinc-800 text-zinc-100 rounded-bl-md'
+                        ? 'bg-blue-600 text-white rounded-br-md'
+                        : 'bg-zinc-900 text-zinc-100 rounded-bl-md'
                     }`}
                   >
                     <p className="text-sm leading-relaxed break-words">{message.content}</p>
@@ -176,13 +176,13 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-zinc-900 border-t border-zinc-800">
+      <div className="p-4 bg-zinc-950 border-t border-zinc-900">
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
           <Button
             type="button"
             size="icon"
             variant="ghost"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-10 w-10"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-10 w-10"
           >
             <Smile className="w-5 h-5" />
           </Button>
@@ -190,7 +190,7 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
             type="button"
             size="icon"
             variant="ghost"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-10 w-10"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-10 w-10"
           >
             <Paperclip className="w-5 h-5" />
           </Button>
@@ -198,13 +198,13 @@ export function ChatWindow({ contactId, user, onStartCall, onViewProfile }: Chat
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type a message"
-            className="flex-1 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-600 rounded-xl h-11"
+            className="flex-1 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-600 rounded-xl h-11"
           />
           <Button
             type="submit"
             size="icon"
             disabled={!inputValue.trim()}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full h-11 w-11 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full h-11 w-11 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
           </Button>

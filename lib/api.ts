@@ -1,103 +1,114 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { auth } from '@clerk/nextjs/server';
+import axios, { AxiosInstance } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 class APIClient {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: API_URL,
       headers: {
         'Content-Type': 'application/json',
       },
-      timeout: 30000,
+      timeout: 10000,
     });
 
-    // Request interceptor - add Clerk token
+    // Request interceptor - will be set from components
     this.client.interceptors.request.use(
       async (config) => {
-        if (typeof window !== 'undefined') {
-          // Client-side: get token from Clerk
-          try {
-            const clerk = (window as any).Clerk;
-            if (clerk) {
-              const token = await clerk.session?.getToken();
-              if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-              }
-            }
-          } catch (error) {
-            console.error('Error getting Clerk token:', error);
-          }
-        }
+        // Token will be added from calling component
         return config;
       },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor
-    this.client.interceptors.response.use(
-      (response) => response,
-      async (error: AxiosError) => {
+      (error) => {
         return Promise.reject(error);
       }
     );
   }
 
-  // User endpoints
+  // Set auth token
+  setAuthToken(token: string) {
+    this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Clear auth token
+  clearAuthToken() {
+    delete this.client.defaults.headers.common['Authorization'];
+  }
+
+  // Users
   async getUsers(search?: string) {
-    const response = await this.client.get('/users', {
-      params: { search },
-    });
-    return response.data.data;
+    try {
+      const response = await this.client.get('/users', { params: { search } });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return { users: [] };
+    }
   }
 
-  async getUserById(id: string) {
-    const response = await this.client.get(`/users/${id}`);
-    return response.data.data;
+  async getUser(userId: string) {
+    try {
+      const response = await this.client.get(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
   }
 
-  async updateProfile(data: { name?: string; avatar?: string; status?: string }) {
-    const response = await this.client.put('/users/profile', data);
-    return response.data.data;
+  async updateUser(userId: string, data: any) {
+    try {
+      const response = await this.client.put(`/users/${userId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
   }
 
-  // Conversation endpoints
+  // Conversations
   async getConversations() {
-    const response = await this.client.get('/conversations');
-    return response.data.data;
-  }
-
-  async getConversationById(id: string) {
-    const response = await this.client.get(`/conversations/${id}`);
-    return response.data.data;
+    try {
+      const response = await this.client.get('/conversations');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      return { conversations: [] };
+    }
   }
 
   async createConversation(participantId: string) {
-    const response = await this.client.post('/conversations', { participantId });
-    return response.data.data;
+    try {
+      const response = await this.client.post('/conversations', { participantId });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
   }
 
-  async getMessages(conversationId: string, page = 1, limit = 50) {
-    const response = await this.client.get(`/conversations/${conversationId}/messages`, {
-      params: { page, limit },
-    });
-    return response.data.data;
-  }
-
-  async deleteConversation(id: string) {
-    const response = await this.client.delete(`/conversations/${id}`);
-    return response.data;
+  async getMessages(conversationId: string) {
+    try {
+      const response = await this.client.get(`/conversations/${conversationId}/messages`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      return { messages: [] };
+    }
   }
 
   // Sync Clerk user to backend
   async syncClerkUser(userData: { clerkId: string; email: string; name: string; avatar?: string }) {
-    const response = await this.client.post('/auth/clerk-sync', userData);
-    return response.data.data;
+    try {
+      const response = await this.client.post('/auth/clerk-sync', userData);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error syncing user:', error.message);
+      // Don't throw - just log and continue
+      return null;
+    }
   }
 }
 
 export const api = new APIClient();
-export default api;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useClerk } from "@clerk/nextjs"
+import { useClerk, useAuth } from "@clerk/nextjs"
 import { motion } from "framer-motion"
 import { ChatSidebar } from "./chat-sidebar"
 import { ChatWindow } from "./chat-window"
@@ -10,6 +10,7 @@ import { VideoCall } from "./video-call"
 import { UserSettings } from "./user-settings"
 import { UserProfile } from "./user-profile"
 import { socketClient } from "@/lib/socket"
+import { api } from "@/lib/api"
 
 interface ChatAppProps {
   user: { id: string; name: string; email: string }
@@ -18,6 +19,7 @@ interface ChatAppProps {
 export function ChatApp({ user }: ChatAppProps) {
   const router = useRouter()
   const { signOut } = useClerk()
+  const { getToken } = useAuth()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [inCall, setInCall] = useState(false)
   const [callContact, setCallContact] = useState<string | null>(null)
@@ -26,14 +28,29 @@ export function ChatApp({ user }: ChatAppProps) {
 
   // Connect to WebSocket on mount
   useEffect(() => {
-    socketClient.connect();
+    const initSocket = async () => {
+      try {
+        const token = await getToken();
+        if (token) {
+          socketClient.setToken(token);
+          api.setAuthToken(token);
+          await socketClient.connect();
+        }
+      } catch (error) {
+        console.error('Socket connection error:', error);
+      }
+    };
+
+    initSocket();
+
     return () => {
       socketClient.disconnect();
     };
-  }, []);
+  }, [getToken]);
 
   const handleLogout = async () => {
     socketClient.disconnect();
+    api.clearAuthToken();
     await signOut()
     router.push("/landing")
   }
@@ -100,7 +117,7 @@ export function ChatApp({ user }: ChatAppProps) {
   }
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden">
+    <div className="flex h-screen bg-black overflow-hidden">
       <ChatSidebar
         user={user}
         selectedContact={selectedContact}
@@ -131,14 +148,14 @@ export function ChatApp({ user }: ChatAppProps) {
         </motion.div>
       ) : (
         <motion.div 
-          className="flex-1 flex flex-col items-center justify-center bg-zinc-950"
+          className="flex-1 flex flex-col items-center justify-center bg-black"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           <div className="text-center max-w-md">
             <motion.div 
-              className="w-20 h-20 rounded-full bg-indigo-600/10 flex items-center justify-center mx-auto mb-6 border border-indigo-600/20"
+              className="w-20 h-20 rounded-full bg-blue-600/10 flex items-center justify-center mx-auto mb-6 border border-blue-600/20"
               animate={{
                 scale: [1, 1.05, 1],
                 opacity: [0.5, 1, 0.5]

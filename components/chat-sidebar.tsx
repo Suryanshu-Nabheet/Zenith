@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LogOut, Plus, Search, Settings, MoreVertical, User } from "lucide-react"
+import { LogOut, Plus, Search, Settings } from "lucide-react"
 
 interface Contact {
   id: string
@@ -73,26 +73,13 @@ export function ChatSidebar({
 
   const filteredContacts = contacts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500"
-      case "away":
-        return "bg-yellow-500"
-      case "offline":
-        return "bg-zinc-600"
-      default:
-        return "bg-zinc-600"
-    }
-  }
-
   return (
-    <div className="w-96 bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen">
+    <div className="w-96 bg-zinc-950 border-r border-zinc-900 flex flex-col h-screen">
       {/* Header */}
-      <div className="p-4 bg-zinc-900 border-b border-zinc-800">
+      <div className="p-4 bg-zinc-950 border-b border-zinc-900">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => onViewProfile?.(user.id)}>
-            <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -104,7 +91,7 @@ export function ChatSidebar({
               size="icon"
               variant="ghost"
               onClick={onOpenSettings}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full h-9 w-9"
+              className="text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-full h-9 w-9"
             >
               <Settings className="w-5 h-5" />
             </Button>
@@ -112,7 +99,7 @@ export function ChatSidebar({
               size="icon"
               variant="ghost"
               onClick={onLogout}
-              className="text-zinc-400 hover:text-red-400 hover:bg-zinc-800 rounded-full h-9 w-9"
+              className="text-zinc-400 hover:text-red-400 hover:bg-zinc-900 rounded-full h-9 w-9"
             >
               <LogOut className="w-5 h-5" />
             </Button>
@@ -126,7 +113,7 @@ export function ChatSidebar({
             placeholder="Search conversations"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-600 rounded-lg h-10"
+            className="pl-10 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-600 rounded-lg h-10"
           />
         </div>
       </div>
@@ -141,19 +128,19 @@ export function ChatSidebar({
                 onClick={() => onSelectContact(contact.id)}
                 className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
                   selectedContact === contact.id
-                    ? "bg-zinc-800"
-                    : "hover:bg-zinc-800/50"
+                    ? "bg-zinc-900"
+                    : "hover:bg-zinc-900/50"
                 }`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 whileHover={{ x: 2 }}
               >
                 <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-semibold text-white">
+                  <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-semibold text-white">
                     {contact.avatar}
                   </div>
                   {contact.status === "online" && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900"></div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-950"></div>
                   )}
                 </div>
 
@@ -171,7 +158,7 @@ export function ChatSidebar({
                       {contact.lastMessage || "No messages"}
                     </p>
                     {contact.unread && contact.unread > 0 && (
-                      <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-medium">
+                      <span className="flex-shrink-0 ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
                         {contact.unread}
                       </span>
                     )}
@@ -182,16 +169,16 @@ export function ChatSidebar({
           </div>
         ) : (
           <div className="p-8 text-center">
-            <Search className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+            <Search className="w-12 h-12 text-zinc-800 mx-auto mb-3" />
             <p className="text-sm text-zinc-500">No conversations found</p>
           </div>
         )}
       </div>
 
       {/* New Chat Button */}
-      <div className="p-4 border-t border-zinc-800">
+      <div className="p-4 border-t border-zinc-900">
         <Button
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white gap-2 rounded-lg h-11"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg h-11"
         >
           <Plus className="w-5 h-5" />
           New Chat
